@@ -1,0 +1,93 @@
+﻿@model Client
+
+<style>
+    .field-validation-error {
+        color: #b94a48;
+    }
+
+    input.input-validation-error {
+        border: 1px solid #b94a48;
+    }
+
+    .validation-summary-errors {
+        color: #b94a48;
+    }
+
+    .validation-summary-valid {
+        display: none;
+    }
+</style>
+
+<script>
+    function getFormValues() {
+        const formValue = {
+            id: $('#idField').val(),
+            name: $('#nameField').val(),
+            phone: $('#phoneField').val(),
+        };
+
+        return formValue;
+    }
+</script>
+
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            @if (Model.Id == -1)
+            {
+                <h5 class="modal-title" id="staticBackdropLabel">Новый клиент</h5>
+            }
+            else
+            {
+                <h5 class="modal-title" id="staticBackdropLabel">Изменение клиента</h5>
+            }
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            @if (Model.Id == -1)
+            {
+                <form id="clientForm" asp-antiforgery="true">
+                    <div class="form-group">
+                        <label asp-for="Name"></label>
+                        <input id="nameField" asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PhoneNumber"></label>
+                        <input id="phoneField" asp-for="PhoneNumber" class="form-control" rows="3" />
+                        <span asp-validation-for="PhoneNumber"></span>
+                    </div>
+                </form>
+
+                <div class="modal-footer">
+                    <button id="formCreateBtn" class="btn btn-primary" data-dismiss="modal">Создать</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Назад</button>
+                </div>
+            }
+            else
+            {
+                <form id="clientForm" asp-antiforgery="true">
+                    <div class="form-group">
+                        <label asp-for="Name"></label>
+                        <input id="idField" asp-for="Id" hidden>
+                        <input id="nameField" asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="PhoneNumber"></label>
+                        <input id="phoneField" asp-for="PhoneNumber" class="form-control" rows="3" />
+                        <span asp-validation-for="PhoneNumber"></span>
+                    </div>
+                </form>
+
+                <div class="modal-footer">
+                    <button id="formEditBtn" class="btn btn-warning" data-dismiss="modal">Изменить</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Назад</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

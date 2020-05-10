@@ -1,0 +1,46 @@
+﻿@model IEnumerable<OrderViewModel>
+
+<script>
+    $(document).ready(function () {
+        $("#ordersGrid").DataTable({
+            "processing": true,
+            "sortable": true,
+            "searching": true,
+            "paging": true,
+            "pagingType": "numbers",
+            "select": true,
+            "destroy": true,
+        });
+    })
+</script>
+
+<table id="ordersGrid" class="table table-striped hover table-responsive-md table-bordered table-sm btn-table" cellspacing="0" width="100%">
+    <thead class="thead-dark">
+        <tr class="clickable-row">
+            <th>#</th>
+            <th>Клиент</th>
+            <th>Адресс</th>
+            <th>Описание</th>
+            <th>Цена</th>
+            <th>Дата создания</th>
+        </tr>
+    </thead>
+
+    <tbody id="orderGridBody">
+        @if (Model != null)
+        {
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>@order.Id</td>
+                    <td>@order.Client.Name</td>
+                    <td>@order.Address</td>
+                    <td>@order.Description</td>
+                    <td>@order.Price</td>
+                    <td>@order.DateString</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+

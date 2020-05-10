@@ -1,0 +1,138 @@
+﻿@model OrderViewModel
+
+<style>
+    .field-validation-error {
+        color: #b94a48;
+    }
+
+    textarea.input-validation-error {
+        border: 1px solid #b94a48;
+    }
+
+    select.input-validation-error {
+        border: 1px solid #b94a48;
+    }
+
+    input.input-validation-error {
+        border: 1px solid #b94a48;
+    }
+
+    .validation-summary-errors {
+        color: #b94a48;
+    }
+
+    .validation-summary-valid {
+        display: none;
+    }
+</style>
+
+<script>
+    function getFormValues() {
+        const formValue = {
+            id: $('#idField').val(),
+            clientId: $('#clientField').val(),
+            address: $('#addressField').val(),
+            description: $('#descriptionField').val(),
+            price: $('#priceField').val(),
+            date: $('#dateField').val(),
+            dateString: $('#dateStringField').val(),
+        };
+
+        return formValue;
+    }
+</script>
+
+<div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+            @if (Model.Id == -1)
+            {
+                <h5 class="modal-title" id="staticBackdropLabel">Новый заказ</h5>
+            }
+            else
+            {
+                <h5 class="modal-title" id="staticBackdropLabel">Изменение заказа</h5>
+            }
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            @if (Model.Id == -1)
+            {
+                <form id="orderForm" asp-antiforgery="true">
+                    <div class="form-group">
+                        <label asp-for="Client"></label>
+                        <select id="clientField" asp-for="ClientId" asp-items="@(new SelectList(ViewBag.Clients, "Id", "Name"))" class="form-control">
+                            <option selected hidden></option>
+                        </select>
+                        <span asp-validation-for="Client"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Description"></label>
+                        <textarea id="descriptionField" asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Address"></label>
+                        <input id="addressField" asp-for="Address" class="form-control">
+                        <span asp-validation-for="Address"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Price"></label>
+                        <input id="priceField" asp-for="Price" class="form-control">
+                        <span asp-validation-for="Price"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="DateString"></label>
+                        <input id="dateStringField" asp-for="DateString" disabled class="form-control">
+                        <input id="dateField" asp-for="Date" hidden>
+                    </div>
+                </form>
+
+                <div class="modal-footer">
+                    <button id="formCreateBtn" class="btn btn-primary" data-dismiss="modal">Создать</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Назад</button>
+                </div>
+            }
+            else
+            {
+                <form id="orderForm" asp-antiforgery="true">
+                    <div class="form-group">
+                        <label asp-for="Client"></label>
+                        <input id="idField" asp-for="Id" hidden>
+                        <select id="clientField" asp-for="ClientId" asp-items="@(new SelectList(ViewBag.Clients, "Id", "Name", ViewBag.SelectedClient))" class="form-control">
+                        </select>
+                        <span asp-validation-for="ClientId"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Description"></label>
+                        <textarea id="descriptionField" asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Address"></label>
+                        <input id="addressField" asp-for="Address" class="form-control">
+                        <span asp-validation-for="Address"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Price"></label>
+                        <input id="priceField" asp-for="Price" class="form-control">
+                        <span asp-validation-for="Price"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Date"></label>
+                        <input id="dateField" asp-for="Date" class="form-control">
+                        <span asp-validation-for="Date"></span>
+                    </div>
+                </form>
+
+                <div class="modal-footer">
+                    <button id="formEditBtn" class="btn btn-warning" data-dismiss="modal">Изменить</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Назад</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

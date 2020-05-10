@@ -1,0 +1,40 @@
+﻿@model IEnumerable<Client>
+
+<script>
+    $(document).ready(function () {
+        $("#clientsGrid").DataTable({
+            "processing": true,
+            "sortable": true,
+            "searching": true,
+            "paging": true,
+            "pagingType": "numbers",
+            "select": true,
+            "destroy": true,
+        });
+    })
+</script>
+
+<table id="clientsGrid" class="table table-striped hover table-responsive-md table-bordered table-sm btn-table" cellspacing="0" width="100%">
+    <thead class="thead-dark">
+        <tr class="clickable-row">
+            <th>#</th>
+            <th>Имя</th>
+            <th>Телефон</th>
+        </tr>
+    </thead>
+
+    <tbody id="clientGridBody">
+        @if (Model != null)
+        {
+            @foreach (var client in Model)
+            {
+                <tr>
+                    <td>@client.Id</td>
+                    <td>@client.Name</td>
+                    <td>@client.PhoneNumber</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+

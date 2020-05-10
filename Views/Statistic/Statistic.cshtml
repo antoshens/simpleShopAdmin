@@ -1,0 +1,231 @@
+﻿
+@{
+    ViewData["Title"] = "Statistic";
+}
+
+@* Chart.js *@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.bundle.js"></script>
+
+<script>
+    $(document).ready(function () {
+        var ctx = document.getElementById('orderChart').getContext('2d');
+        var config = {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Сумма Заказов',
+                    data: [0],
+                    backgroundColor: [
+                        addOpacity(getRandomColor(), 0.5),
+                    ],
+                    borderColor: [
+                        getRandomColor(),
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Сумма Заказов'
+                        }
+                    }],
+                    xAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                        },
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Дата Заказа'
+                        }
+                    }]
+                }
+            }
+        }
+        var ordChart = new Chart(ctx, config);
+
+        $('#chartTypeSelection').change(function () {
+            var temp = jQuery.extend(true, {}, config);
+            temp.type = lower($(this).val());
+            ordChart.destroy();
+            ordChart = new Chart(ctx, temp);
+        })
+
+        $('#updateChartBtn').click(function () {
+            const month = $('#chartMonthSelection').val();
+            const year = $('#chartYearSelection').val();
+            const url = '@Url.Content("~/")' + `Statistic/UpdateChartData?month=${month}&year=${year}`;
+
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: {},
+                success: function (response) {
+                    var newData = response.map(r => r.timePrice);
+                    var newLabels = response.map(r => r.ordrDay);
+                    var bgColors = [];
+                    var brdColors = [];
+
+                    response.forEach(() => {
+                        const color = getRandomColor()
+                        bgColors.push(addOpacity(color, 0.5));
+                        brdColors.push(color);
+                    });
+
+                    config.type = type = lower($('#chartTypeSelection').val());
+                    config.data = {
+                        labels: newLabels,
+                        datasets: [{
+                            label: 'Сумма Заказов',
+                            data: newData,
+                            borderWidth: 1,
+                            backgroundColor: bgColors,
+                            borderColor: brdColors,
+                        }]
+                    }
+
+                    $('#info-alert').alert('close');
+
+                    var temp = jQuery.extend(true, {}, config);
+                    ordChart.destroy();
+                    ordChart = new Chart(ctx, temp);
+                }
+            });
+        });
+
+        $('body').on('click', '#updateClStatBtn', function () {
+            const month = $('#clientMonthSelection').val();
+            const year = $('#clientYearSelection').val();
+            const url = '@Url.Content("~/")' + `Statistic/UpdateClientStats?month=${month}&year=${year}`;
+
+            $.ajax({
+                url: url,
+                method: "POST",
+                data: {},
+                success: function (response) {
+                    $('#clientStats').html(response);
+                }
+            });
+        });
+    });
+
+    function lower(str) {
+        return (str[0].toLowerCase() + str.slice(1)).replace(/\s/g, '');
+    }
+
+    function randomInt(min, max) {
+        return min + Math.floor((max - min) * Math.random());
+    }
+
+    function addOpacity(rgbaColor, opacity) {
+        var rgbColorComp = rgbaColor.split(',');
+        if (rgbColorComp.length != 4)
+            return rgbaColor;
+        rgbColorComp[3] = ` ${opacity})`;
+        return rgbColorComp.join();
+    }
+
+    function getRandomColor() {
+        var color = [];
+        for (var i = 0; i < 3; i++) {
+            color.push(randomInt(0, 255));
+        }
+
+        var resColor = ''
+        color.forEach(c => {
+            resColor += c + ', '
+        });
+        return `rgba(${resColor}1)`;
+    }
+</script>
+
+<style>
+    select {
+        width: 70px;
+    }
+
+    #orderChart {
+        height: 500px !important;
+        width: 900px !important;
+    }
+
+    .chart-div {
+        margin-top: 20px;
+    }
+
+    .chart-form-div {
+        margin-right: 15px;
+    }
+</style>
+
+<div style="min-width: max-content;">
+    <div class="d-flex justify-content-center">
+        <h2 style="color: #551b96">Статистика заказов</h2>
+    </div>
+
+    @* Chart panel *@
+    <div class="d-flex">
+        <div class="p-1 flex-grow-1">
+            <h5 style="color: #99aaff">График Заказов</h5>
+            <div id="plot">
+                <canvas id="orderChart"></canvas>
+            </div>
+        </div>
+
+        @* Chart form panel *@
+        <div class="p-1">
+            <div>
+                <h5 style="color: #99aaff">Тип графика</h5>
+                <select id="chartTypeSelection" class="browser-default custom-select" style="width: 150px;">
+                    <option>Line</option>
+                    <option>Bar</option>
+                    <option>Polar Area</option>
+                    <option>Doughnut</option>
+                </select>
+            </div>
+
+            <div class="chart-div">
+                <h5 style="color: #99aaff">Временной промежуток</h5>
+                <div class="d-flex chart-div">
+                    <div class="chart-form-div">
+                        <label>Год</label>
+                        <div class="p1">
+                            <select id="chartYearSelection" class="browser-default custom-select" asp-items="@(new SelectList(ViewBag.Years, DateTime.Now.Year))">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="chart-form-div">
+                        <label>Месяц</label>
+                        <div class="p1">
+                            <select id="chartMonthSelection" class="browser-default custom-select" asp-items="@(new SelectList(ViewBag.Months))">
+                                <option selected></option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-div">
+                    <button id="updateChartBtn" type="button" class="btn btn-sm btn-outline-success">Обновить данные</button>
+                </div>
+
+                <div id="info-alert" class="alert alert-info chart-div" style="width: 350px;" role="alert">
+                    Выберите интересующие вас фильтры.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    @* Stat info panel *@
+    <div id="clientStats">
+        @await Html.PartialAsync("_ClientStats", new List<StatInfoViewModel>())
+    </div>
+</div>
+

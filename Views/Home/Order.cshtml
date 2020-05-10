@@ -1,0 +1,254 @@
+﻿@model IEnumerable<OrderViewModel>
+
+@{
+    ViewData["Title"] = "Order";
+}
+
+@section Scripts{
+    <style>
+        table.dataTable tbody tr.selected,
+        table.dataTable tbody th.selected,
+        table.dataTable tbody td.selected {
+            background-color: #FFC780;
+        }
+
+        table.dataTable tbody tr:hover {
+            background-color: #FFDD99;
+        }
+
+        .page-item.active .page-link {
+            background-color: #FFC780;
+            border-color: #FFC780;
+        }
+
+        table.dataTable.hover tbody tr:hover.selected {
+            background-color: #FFC780;
+        }
+
+        .page-link {
+            color: black;
+        }
+
+        #ordersGrid_wrapper {
+            margin-top: 10px;
+        }
+
+        .confirm-toast {
+            position: absolute;
+            top: 80%;
+            right: 40%;
+            width: 300px; 
+            min-height: 200px;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            onSelectionEventSubscribe()
+
+            function onSelectionEventSubscribe() {
+                $("#ordersGrid").DataTable()
+                    .on('select', function () {
+                        $('#removeBtn').prop('disabled', false)
+                        $('#editBtn').prop('disabled', false)
+                    })
+                    .on('deselect', function () {
+                        $('#removeBtn').prop('disabled', true)
+                        $('#editBtn').prop('disabled', true)
+                    })
+            }
+
+            function onOrderGridReload(response) {
+                $("#ordersGrid").DataTable().off('select').off('deselect')
+                $("#ordersGrid").DataTable().destroy();
+
+                $('#orderGrid').html(response);
+                onSelectionEventSubscribe();
+
+                $('#removeBtn').prop('disabled', true);
+                $('#editBtn').prop('disabled', true);
+            }
+
+            $('#removeBtn').click(function () {
+                $("#confirmationModal").modal('show', {
+                    backdrop: true
+                })
+            });
+
+            $('#editBtn').click(function () {
+                const orderTable = $("#ordersGrid").DataTable();
+                const selectedRowData = orderTable.row({ selected: true }).data()
+
+                if (!selectedRowData) {
+                    return
+                }
+
+                const url = '@Url.Content("~/")' + "Home/GetOrderActionForm";
+                $.get(
+                    url,
+                    {
+                        Id: selectedRowData[0],
+                        Client: selectedRowData[1],
+                        Address: selectedRowData[2],
+                        Description: selectedRowData[3],
+                        Price: selectedRowData[4],
+                        DateString: selectedRowData[5]
+                    },
+                    function onSucess(response) {
+                        $('#formModal').html(response);
+
+                        $("#formModal").modal('show', {
+                            backdrop: true
+                        })
+                    }
+                );
+            });
+
+            $('#createBtn').click(function () {
+                const url = '@Url.Content("~/")' + "Home/GetOrderActionForm";
+                $.get(
+                    url,
+                    '',
+                    function onSucess(response) {
+                        $('#formModal').html(response);
+
+                        $("#formModal").modal('show', {
+                            backdrop: true
+                        })
+                    }
+                );
+            });
+
+            $('#deleteModalBtn').click(function () {
+                const orderTable = $("#ordersGrid").DataTable();
+                const selectedRowData = orderTable.row({ selected: true }).data()
+
+                if (!selectedRowData) {
+                    return
+                }
+
+                const url = '@Url.Content("~/")' + "Home/DeleteOrder";
+                $.post(
+                    url,
+                    {
+                        Id: selectedRowData[0],
+                        ClientId: selectedRowData[1],
+                        Address: selectedRowData[2],
+                        Description: selectedRowData[3],
+                        Price: selectedRowData[4],
+                        DateString: selectedRowData[5]
+                    },
+                    function onSucess(response) {
+                        onOrderGridReload(response);
+                        $('#confirmToastBodyText').text('Заказ успешно удален.');
+                        $('#confirmationToastHeaderText').text('Удаление');
+                        $("#confirmToast").toast('show');
+                    }
+                );
+            })
+
+            $('body')
+                .on('click', '#formCreateBtn', function () {
+                    const formValue = getFormValues();
+
+                    const url = '@Url.Content("~/")' + "Home/CreateOrder";
+                    $.post(
+                        url,
+                        {
+                            ClientId: formValue.clientId,
+                            Address: formValue.address,
+                            Description: formValue.description,
+                            Price: formValue.price,
+                            DateString: formValue.date
+                        },
+                        function onSucess(response) {
+                            onOrderGridReload(response);
+                            $('#confirmToastBodyText').text('Заказ успешно создан.');
+                            $('#confirmationToastHeaderText').text('Добавление');
+                            $("#confirmToast").toast('show');
+                        }
+                    );
+                })
+                .on('click', '#formEditBtn', function () {
+                    const formValue = getFormValues();
+
+                    const url = '@Url.Content("~/")' + "Home/EditOrder";
+                    $.post(
+                        url,
+                        {
+                            id: formValue.id,
+                            ClientId: formValue.clientId,
+                            Address: formValue.address,
+                            Description: formValue.description,
+                            Price: formValue.price,
+                            Date: formValue.date
+                        },
+                        function onSucess(response) {
+                            onOrderGridReload(response);
+                            $('#confirmToastBodyText').text('Заказ успешно изменен.');
+                            $('#confirmationToastHeaderText').text('Обновление');
+                            $("#confirmToast").toast('show');
+                        }
+                    );
+                })
+        });
+    </script>
+}
+<div class="container-fluid" style="height: 50vh">
+    <div class="row justify-content-md-center">
+        <div class="col col-sm-1">
+            <button id="createBtn" type="button" class="btn btn-sm btn-outline-success">Добавить</button>
+        </div>
+        <div class="col col-sm-1">
+            <button id="editBtn" type="button" class="btn btn-sm btn-outline-warning" disabled>Изменить</button>
+        </div>
+        <div class="col col-sm-1">
+            <button id="removeBtn" type="button" class="btn btn-sm btn-outline-danger" disabled>Удалить</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm" id="orderGrid" style="overflow: auto;">
+            @await Html.PartialAsync("_OrderGrid", Model)
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmationModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">Удаление записи</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <span>Вы уверены что хотите удалить выбранную запись?</span>
+            </div>
+            <div class="modal-footer">
+                <button id="deleteModalBtn" type="button" class="btn btn-danger" data-dismiss="modal">Удалить</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Назад</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="formModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    @await Html.PartialAsync("_OrderForm", new OrderViewModel())
+</div>
+
+<div class="confirm-toast">
+    <div id="confirmToast" class="toast" aria-live="assertive" aria-atomic="true" data-delay="3000" style="width: inherit;">
+        <div class="toast-header">
+            <strong id="confirmationToastHeaderText" class="mr-auto"></strong>
+            <small class="text-muted">Только что</small>
+            <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <div class="toast-body">
+            <label id="confirmToastBodyText"></label>
+        </div>
+    </div>
+</div>

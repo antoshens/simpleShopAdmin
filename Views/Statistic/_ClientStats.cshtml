@@ -1,0 +1,79 @@
+﻿@model IEnumerable<StatInfoViewModel>
+
+<style>
+    .client-delimiter {
+        transform: rotate(90deg);
+        width: 150px;
+        margin-top: 80px;
+    }
+
+    .client-list {
+        height: 400px;
+        width: 300px;
+        overflow: auto;
+    }
+</style>
+
+@{
+    var priceSummary = new Func<int>(() => Model.Sum(m => m.ClientSumPrice));
+}
+
+<div class="d-flex justify-content-center">
+    <h2 style="color: #551b96">Статистика клиентов</h2>
+</div>
+
+<div>
+    <div class="d-flex chart-div">
+        <div class="chart-form-div">
+            <label>Год</label>
+            <div class="p1">
+                <select id="clientYearSelection" class="browser-default custom-select"
+                        asp-items="@(new SelectList(ViewBag.Years, ViewBag.SelectedPeriod != null ? ViewBag.SelectedPeriod["year"] : DateTime.Now.Year))">
+                </select>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button id="updateClStatBtn" type="button" class="btn btn-sm btn-outline-success">Подтвердить</button>
+            </div>
+        </div>
+
+        <div class="chart-form-div">
+            <label>Месяц</label>
+            <div class="p1">
+                <select id="clientMonthSelection" class="browser-default custom-select"
+                        asp-items="@(new SelectList(ViewBag.Months, ViewBag.SelectedPeriod != null ? ViewBag.SelectedPeriod["month"] : null))">
+                    <option></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="chart-form-div">
+            <div class="p2">
+                <hr class="client-delimiter">
+            </div>
+        </div>
+
+        <div class="chart-form-div client-list">
+            @if (ViewBag.SelectedPeriod != null)
+            {
+                <label>Топ клиентов за @(String.IsNullOrEmpty(@ViewBag.SelectedPeriod["month"]) ? @ViewBag.SelectedPeriod["year"] + " год" : @ViewBag.SelectedPeriod["month"].ToLower() + " - " + @ViewBag.SelectedPeriod["year"])</label>
+            }
+            <div class="p2">
+                <ul>
+                    @foreach (var sts in Model)
+                    {
+                        <li class="list-group-item list-group-item-action list-group-item-light">@sts.Client.Name - @sts.ClientSumPrice &#8381;</li>
+                    }
+                </ul>
+            </div>
+
+            @if (Model.Count() > 0)
+            {
+                <div class="d-flex">
+                    <h6>Всего за период:&nbsp;</h6>
+                    <span>@priceSummary() &#8381;</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>
