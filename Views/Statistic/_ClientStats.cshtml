@@ -12,6 +12,10 @@
         width: 300px;
         overflow: auto;
     }
+
+    #client-ul {
+        display: contents;
+    }
 </style>
 
 @{
@@ -59,7 +63,7 @@
                 <label>Топ клиентов за @(String.IsNullOrEmpty(@ViewBag.SelectedPeriod["month"]) ? @ViewBag.SelectedPeriod["year"] + " год" : @ViewBag.SelectedPeriod["month"].ToLower() + " - " + @ViewBag.SelectedPeriod["year"])</label>
             }
             <div class="p2">
-                <ul>
+                <ul id="client-ul">
                     @foreach (var sts in Model)
                     {
                         <li class="list-group-item list-group-item-action list-group-item-light">@sts.Client.Name - @sts.ClientSumPrice &#8381;</li>
@@ -69,7 +73,7 @@
 
             @if (Model.Count() > 0)
             {
-                <div class="d-flex">
+                <div class="d-flex" style="margin-top: 10px;">
                     <h6>Всего за период:&nbsp;</h6>
                     <span>@priceSummary() &#8381;</span>
                 </div>

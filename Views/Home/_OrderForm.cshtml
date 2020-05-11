@@ -101,10 +101,21 @@
                 <form id="orderForm" asp-antiforgery="true">
                     <div class="form-group">
                         <label asp-for="Client"></label>
-                        <input id="idField" asp-for="Id" hidden>
-                        <select id="clientField" asp-for="ClientId" asp-items="@(new SelectList(ViewBag.Clients, "Id", "Name", ViewBag.SelectedClient))" class="form-control">
+                        <input id="idField" asp-for="Id" hidden />
+                        <select id="clientField" asp-for="ClientId" class="form-control">
+                            @foreach (Client client in ViewBag.Clients)
+                            {
+                                @if (ViewBag.SelectedClient != null && client.Id == ViewBag.SelectedClient.Id)
+                                {
+                                    <option value="@client.Id" selected>@client.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@client.Id">@client.Name</option>
+                                }
+                            }
                         </select>
-                        <span asp-validation-for="ClientId"></span>
+                        <span asp-validation-for=" ClientId"></span>
                     </div>
                     <div class="form-group">
                         <label asp-for="Description"></label>
